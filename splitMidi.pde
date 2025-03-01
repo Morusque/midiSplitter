@@ -39,14 +39,16 @@ void dropEvent(DropEvent theDropEvent) {
     // Continue processing until all notes have been assigned a layer
     while (notes.size() > 0) {
       // Iterate through ticks from 0 to maxTick
+      int endOfPreviousNote = -1;
       for (int currentTick = 0; currentTick < maxTick; currentTick++) {
 
         // Find the highest note playing at the current tick
-        Note highestNote = findHighestNoteAtTick(currentTick);
+        Note highestNote = findHighestNoteAtTick(currentTick,endOfPreviousNote);
         if (highestNote != null) {
           highestNote.layer = layer;  // Assign layer to the note
           currentTick = highestNote.stopTick - 1;  // Skip to the end of the current note
-
+          endOfPreviousNote = currentTick ;
+          
           // Remove the note from the notes array (it has been processed)
           processedNotes.add(highestNote);
           notes.remove(highestNote);
@@ -124,12 +126,12 @@ void saveAsMidi(ArrayList<Note> notes, Sequence originalSequence) {
 }
 
 // Function to find the highest note playing at a given tick
-Note findHighestNoteAtTick(int currentTick) {
+Note findHighestNoteAtTick(int currentTick, int previousNoteTick) {
   Note highestNote = null;
 
   // Iterate over remaining notes to find the highest note that starts at or before the current tick
   for (Note note : notes) {
-    if (note.startTick <= currentTick && note.stopTick > currentTick) {
+    if (note.startTick <= currentTick && note.stopTick > currentTick && note.startTick>=previousNoteTick) {
       if (highestNote == null || note.note > highestNote.note) {
         highestNote = note;  // Update if this note is higher
       }
